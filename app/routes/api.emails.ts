@@ -19,7 +19,8 @@ export const loader: LoaderFunction = async ({ request }) => {
   return json(emails);
 };
 
-// Action to handle creating, updating, or deleting emails
+// Action to handle creating, updating, or deleting emails, best scenario probably would be
+// to split these into separate functions/endpoints
 export const action: ActionFunction = async ({ request }) => {
   const data = await request.formData();
   const type = data.get("type");

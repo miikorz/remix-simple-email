@@ -11,10 +11,9 @@ export const loader: LoaderFunction = async () => {
 export const action: ActionFunction = async ({ request }) => {
   const data = await request.formData();
   const name = data.get("name") as string;
-    const type = data.get("type");
+  const type = data.get("type");
 
-
-  if (!name) {
+  if (type === "create" && !name) {
     throw new Response("Tag name is required", { status: 400 });
   }
 

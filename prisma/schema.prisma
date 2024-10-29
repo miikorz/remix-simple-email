@@ -1,0 +1,34 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Email {
+  id        Int      @id @default(autoincrement())
+  subject   String
+  body      String
+  tags      TagsOnEmails[]
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Tag {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  emails    TagsOnEmails[]
+}
+
+model TagsOnEmails {
+  email     Email    @relation(fields: [emailId], references: [id])
+  emailId   Int
+  tag       Tag      @relation(fields: [tagId], references: [id])
+  tagId     Int
+
+  @@id([emailId, tagId])
+}

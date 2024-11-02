@@ -1,4 +1,6 @@
 
+import { Button } from "./ui/button";
+
 interface ToggleReadStatusProps {
     emailId: number;
     isRead: boolean;
@@ -10,7 +12,7 @@ export default function ToggleReadStatus({ emailId, isRead, onToggle }: ToggleRe
     await fetch(`/api/emails`, {
       method: "POST",
       body: new URLSearchParams({
-        type: "update",
+        type: "update read",
         id: emailId.toString(),
         read: (!isRead).toString(),
       }),
@@ -19,8 +21,8 @@ export default function ToggleReadStatus({ emailId, isRead, onToggle }: ToggleRe
   };
 
   return (
-    <button onClick={toggleReadStatus}>
+    <Button variant={"default"} onClick={toggleReadStatus}>
       {isRead ? "Mark as Unread" : "Mark as Read"}
-    </button>
+    </Button>
   );
 }

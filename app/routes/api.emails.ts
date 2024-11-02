@@ -10,7 +10,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   const emails = await prisma.email.findMany({
     where: {
-      ...(tags ? { tags: { some: { name: { in: tags.split(",") } } } } : {}),
+      ...(tags ? { tags: { some: { tag: { name: { in: tags.split(",") } } } } } : {}),
       ...(read !== null ? { read: read === "true" } : {}),
     },
     include: { tags: true },
@@ -24,23 +24,49 @@ export const loader: LoaderFunction = async ({ request }) => {
 export const action: ActionFunction = async ({ request }) => {
   const data = await request.formData();
   const type = data.get("type");
+  const read = data.get("read");
 
-  switch (type) {
-    case "create":
-      const subject = data.get("subject") as string;
-      const body = data.get("body") as string;
-      await prisma.email.create({ data: { subject, body } });
-      break;
-    case "update":
-      const id = parseInt(data.get("id") as string);
-      const read = data.get("read") === "true";
-      await prisma.email.update({ where: { id }, data: { read } });
-      break;
-    case "delete":
-      const deleteId = parseInt(data.get("id") as string);
-      await prisma.email.delete({ where: { id: deleteId } });
-      break;
+ if (type === "update read") {
+    const id = parseInt(data.get("id") as string);
+    const isEmailRead = read === "true";
+    await prisma.email.update({ where: { id }, data: { read: isEmailRead } });
+
+    return json({ success: true });
+  } else if (type === "add tag") {
+    await prisma.tagsOnEmails.create({ data: { emailId: parseInt(data.get("emailId") as string), tagId: parseInt(data.get("tagId") as string) } });
+    const email = await prisma.email.findUnique({
+      where: { id: parseInt(data.get("emailId") as string) },
+      include: { tags: true },
+    });
+    
+    return json(email);
+  } else if (type === "delete tag") {
+    await prisma.tagsOnEmails.delete({ where: { emailId_tagId: {
+      emailId: parseInt(data.get("emailId") as string),
+      tagId: parseInt(data.get("tagId") as string),
+    } } });
+
+    const email = await prisma.email.findUnique({
+      where: { id: parseInt(data.get("emailId") as string) },
+      include: { tags: true },
+    });
+    
+    return json(email);
+  } else if (type === "delete") {
+    const deleteId = parseInt(data.get("id") as string);
+
+    await prisma.email.delete({ where: { id: deleteId } });
+
+    // return updated list of emails
+    const emails = await prisma.email.findMany({
+      where: {
+        ...(read !== null ? { read: read === "true" } : {}),
+      },
+      include: { tags: true },
+    });
+    
+    return json(emails);
   }
 
-  return json({ success: true });
+  return json({ success: false });
 };

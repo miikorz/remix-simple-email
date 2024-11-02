@@ -19,7 +19,7 @@ export default function EmailDetailPage() {
 
   return (
     <>
-      <EmailDetail email={email} />
+      <EmailDetail emailData={email} />
     </>
   );
 }

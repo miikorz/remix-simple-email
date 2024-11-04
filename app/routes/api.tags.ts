@@ -29,7 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
       throw new Response("Tag ID is required and must be a string", { status: 400 });
     }
 
-    return json({ success: true });
+    const tags = await prisma.tag.findMany();
+    return json(tags);
   }
-
 };

@@ -3,16 +3,8 @@ import { prisma } from "~/db.server";
 import { json, LoaderFunction, ActionFunction } from "@remix-run/node";
 
 // Load all emails, optionally filter by tags or read status
-export const loader: LoaderFunction = async ({ request }) => {
-  const url = new URL(request.url);
-  const tags = url.searchParams.get("tags");
-  const read = url.searchParams.get("read");
-
+export const loader: LoaderFunction = async () => {
   const emails = await prisma.email.findMany({
-    where: {
-      ...(tags ? { tags: { some: { tag: { name: { in: tags.split(",") } } } } } : {}),
-      ...(read !== null ? { read: read === "true" } : {}),
-    },
     include: { tags: true },
   });
 
@@ -27,7 +19,7 @@ export const action: ActionFunction = async ({ request }) => {
   const read = data.get("read");
 
  if (type === "update read") {
-    const id = parseInt(data.get("id") as string);
+    const id = parseInt(data.get("emailId") as string);
     const isEmailRead = read === "true";
     await prisma.email.update({ where: { id }, data: { read: isEmailRead } });
 
@@ -53,19 +45,14 @@ export const action: ActionFunction = async ({ request }) => {
     
     return json(email);
   } else if (type === "delete") {
-    const deleteId = parseInt(data.get("id") as string);
+    const deleteId = parseInt(data.get("emailId") as string);
 
+    // first delete its tag relation
+    await prisma.tagsOnEmails.deleteMany({ where: { emailId: deleteId } });
+    // then delete the email
     await prisma.email.delete({ where: { id: deleteId } });
-
-    // return updated list of emails
-    const emails = await prisma.email.findMany({
-      where: {
-        ...(read !== null ? { read: read === "true" } : {}),
-      },
-      include: { tags: true },
-    });
     
-    return json(emails);
+    return json({ success: true });
   }
 
   return json({ success: false });

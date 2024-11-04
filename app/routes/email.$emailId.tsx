@@ -1,9 +1,9 @@
 import { json, LoaderFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import EmailDetail, { Email } from "~/components/EmailDetail";
+import EmailDetail from "~/components/EmailDetail.component";
 import { prisma } from "~/db.server";
+import { Email } from "~/interfaces/Email";
 
-// TODO: Loader function to get individual email data (mock data for now)
 export const loader: LoaderFunction = async ({ params }) => {
   const { emailId } = params;
   const email = await prisma.email.findUnique({

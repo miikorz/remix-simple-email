@@ -2,11 +2,26 @@
 import { prisma } from "~/db.server";
 import { json, LoaderFunction, ActionFunction } from "@remix-run/node";
 
-// Load all emails, optionally filter by tags or read status
+// Load all emails
 export const loader: LoaderFunction = async () => {
   const emails = await prisma.email.findMany({
     include: { tags: true },
   });
+  // if emails is empty create some dummy data
+  if (emails.length === 0) {
+    await prisma.email.createMany({
+      data: [
+        { subject: 'Test Email', body: 'Hello, how are you?', read: false },
+        { subject: 'Another Test Email', body: 'Asking again how are you', read: true },
+        { subject: 'Yet Another Test Email', body: 'I may be anoying but... how are you?', read: false },
+      ],
+    })
+    const newEmails = await prisma.email.findMany({
+      include: { tags: true },
+    });
+    
+    return json(newEmails);
+  }
 
   return json(emails);
 };

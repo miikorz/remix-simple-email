@@ -3,7 +3,6 @@ import apiClient from "~/apiClient/apiClient";
 import { Email } from "~/interfaces/Email";
 
 export const useEmails = () => {
-  // TODO: move filter status to constants
   const [ filter, setFilter ] = useState<"all" | "read" | "unread">("all");
   const [ emails, setEmails ] = useState<Email[]>([]);
 
@@ -13,7 +12,6 @@ export const useEmails = () => {
 
   const fetchEmails = async (filterValue: "all" | "read" | "unread") => {
     const emails = await apiClient.fetchEmails();
-
     const filteredEmails: Email[] = emails?.filter((email: Email) => {
     if (filterValue === "all") return true;
 
@@ -24,9 +22,12 @@ export const useEmails = () => {
   }
   
   const deleteEmail = async (email: Email) => {
-    const updatedEmails = await apiClient.deleteEmail("delete", email.id.toString(), (email.read).toString());
-    setFilter("all");
-    setEmails(updatedEmails)
+    await apiClient.deleteEmail("delete", email.id.toString(), (email.read).toString());
+    if (filter === "all") {
+      fetchEmails("all");
+    } else {
+      setFilter("all");
+    }
   }
 
   return { emails, filter, deleteEmail, setFilter };

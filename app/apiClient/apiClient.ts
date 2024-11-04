@@ -41,7 +41,9 @@ const toggleReadStatus = async (type: string, emailId: string, read: string) => 
 
 const fetchEmails = async () => {
     const response = await fetch(apiEndpoints.emails);
-    return await response.json();
+    const emails = await response.json();
+    console.log({emails});
+    return emails;
 }
 
 const deleteEmail = async (type: string, emailId: string, read: string) => {

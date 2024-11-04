@@ -13,6 +13,7 @@ jest.mock('../db.server', () => ({
     tagsOnEmails: {
       create: jest.fn(),
       delete: jest.fn(),
+      deleteMany: jest.fn(),
     },
   },
 }));
@@ -37,7 +38,7 @@ describe('emails api', () => {
         method: "POST",
         body: new URLSearchParams({
           type: "update read",
-          id: "1",
+          emailId: "1",
           read: "true",
         }),
       });
@@ -51,6 +52,7 @@ describe('emails api', () => {
       });
       expect(response).toEqual({ success: true });
     });
+
     it('should add a tag to an email', async () => {
       const request = new Request('http://localhost', {
         method: "POST",
@@ -105,7 +107,7 @@ describe('emails api', () => {
         method: "POST",
         body: new URLSearchParams({
           type: "delete",
-          id: "1",
+          emailId: "1",
           read: "true",
         }),
       });
@@ -117,11 +119,7 @@ describe('emails api', () => {
       const response = await (deleteAction as Response).json();
   
       expect(prisma.email.delete).toHaveBeenCalledWith({ where: { id: 1 } });
-      expect(prisma.email.findMany).toHaveBeenCalledWith({
-        where: { read: true },
-        include: { tags: true },
-      });
-      expect(response).toEqual(mockEmails);
+      expect(response).toEqual({ success: true });
     });
   });
 });

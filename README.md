@@ -7,6 +7,7 @@
 Run the dev server:
 
 ```shellscript
+docker-compose up -d
 npm run dev
 ```
 
